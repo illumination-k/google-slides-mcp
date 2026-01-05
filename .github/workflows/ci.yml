@@ -23,9 +23,13 @@ jobs:
         with:
           install: true
           cache: true
+          experimental: true
 
       - name: Lint
         run: mise run lint
+
+      - name: Test
+        run: mise run test
 
       - name: Build
         run: go build ./...

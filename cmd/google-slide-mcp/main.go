@@ -6,27 +6,26 @@ import (
 	"log"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
+
+	"github.com/illumination-k/google-slides-mcp/internal/domain"
+	"github.com/illumination-k/google-slides-mcp/internal/infra/googleauth"
+	"github.com/illumination-k/google-slides-mcp/internal/infra/slidesapi"
 )
 
 func main() {
-	server := mcp.NewServer(&mcp.Implementation{Name: "google-slides-mcp", Version: "v0.0.0"}, nil)
+	ctx := context.Background()
 
-	type args struct {
-		Text string `json:"text" jsonschema:"text to echo back"`
+	repo, err := slidesapi.NewRepository(ctx)
+	if err != nil {
+		log.Printf("Failed to initialize Google Slides repository: %v", err)
+		return
 	}
 
-	mcp.AddTool(server, &mcp.Tool{
-		Name:        "echo",
-		Description: "Echo input text",
-	}, func(ctx context.Context, req *mcp.CallToolRequest, args args) (*mcp.CallToolResult, any, error) {
-		_ = ctx
-		_ = req
-		return &mcp.CallToolResult{
-			Content: []mcp.Content{&mcp.TextContent{Text: args.Text}},
-		}, nil, nil
-	})
+	slidesSvc := domain.NewSlidesService(repo)
+	auth := googleauth.ADCChecker{Scopes: []string{"https://www.googleapis.com/auth/presentations.readonly"}}
+	server := newServer(slidesSvc, auth)
 
-	if err := server.Run(context.Background(), &mcp.StdioTransport{}); err != nil {
+	if err := server.Run(ctx, &mcp.StdioTransport{}); err != nil {
 		log.Printf("Server failed: %v", err)
 	}
 }
