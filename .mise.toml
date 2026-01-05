@@ -44,3 +44,7 @@ run = "pinact run"
 
 [tasks."lint"]
 depends = "lint:*"
+
+[tasks.test]
+description = "Test (go test)"
+run = "go test ./..."

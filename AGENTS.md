@@ -76,6 +76,20 @@ If you edit workflow files under `.github/workflows`, run `mise run fmt` and con
 
 ## Change discipline (agent rules)
 
+## Project layout (layered architecture)
+
+This repo is an application-first Go module. Most code should be organized as:
+
+- `cmd/google-slide-mcp/`: the MCP server entrypoint and transport wiring
+- `internal/domain/`: domain types + use-cases (no external I/O)
+- `internal/infra/`: infrastructure adapters (Google APIs, HTTP clients, etc.)
+
+Dependency direction:
+
+- `internal/domain` must not import `internal/infra`
+- `cmd/...` wires dependencies (dependency injection) and connects transport (MCP) to use-cases
+- `internal/infra` can import `internal/domain` to return domain types
+
 ### Scope
 
 - Make the smallest change that satisfies the request.
